@@ -61,7 +61,7 @@ This project builds a fully automated ETL pipeline using **Apache Airflow**, **D
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-username/csv-to-mysql-airflow.git
+git clone https://github.com/Rioudane/app-airflow-mysql.git
 cd csv-to-mysql-airflow
 2. Add your CSV
 Put a single .csv file into the data/ directory.
