@@ -1,0 +1,49 @@
+services:
+  airflow:
+    build: ./airflow
+    container_name: airflow_container
+    depends_on:
+      - mysql
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "mysql+pymysql://root:root@mysql:3306/data_ingestion"
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin &&
+        airflow connections add 'mysql_default' --conn-uri 'mysql+pymysql://root:root@mysql:3306/data_ingestion' &&
+        (airflow scheduler & airflow webserver)
+      "
+    healthcheck:
+      test: [ "CMD-SHELL", "[ -f /opt/airflow/airflow-webserver.pid ]" ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      - pipeline
+
+  mysql:
+    image: mysql:8.0
+    restart: always
+    container_name: Mysql_container
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: data_ingestion
+    ports:
+      - "3309:3306"
+    networks:
+      - pipeline
+
+
+networks:
+  pipeline:
+    name: pipeline
+    driver: bridge
